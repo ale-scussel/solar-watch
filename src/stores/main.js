@@ -1,0 +1,106 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+export const useMainStore = defineStore('main', () => {
+  // Users
+  const users = ref([
+    { id: 1, name: 'Admin', role: 'responsabile' },
+    { id: 2, name: 'Mario Rossi', role: 'tecnico' },
+    { id: 3, name: 'Cliente A', role: 'cliente' },
+    { id: 4, name: 'Cliente B', role: 'cliente' },
+    { id: 5, name: 'Sconosciuto', role: '' }
+  ])
+  
+  const activeUser = ref(null)
+
+  // Plants
+  const plants = ref([
+    { id: 101, name: 'Impianto Roma', clientId: 3, connected: true, currentProduction: 100, expectedProduction: 100, underperformanceMinutes: 0, lastUpdate: Date.now(), installDate: Date.now() - 365*24*60*60*1000 },
+    { id: 102, name: 'Impianto Milano', clientId: 4, connected: true, currentProduction: 50, expectedProduction: 100, underperformanceMinutes: 20, lastUpdate: Date.now(), installDate: Date.now() - 100*24*60*60*1000 },
+    { id: 103, name: 'Impianto Napoli', clientId: 3, connected: true, currentProduction: 70, expectedProduction: 100, underperformanceMinutes: 35, lastUpdate: Date.now(), installDate: Date.now() - 5*24*60*60*1000 }, // New plant
+    { id: 104, name: 'Impianto Torino', clientId: 4, connected: false, currentProduction: 0, expectedProduction: 50, underperformanceMinutes: 50, lastUpdate: Date.now(), installDate: Date.now() - 500*24*60*60*1000 },
+    { id: 105, name: 'Serra Firenze', clientId: 3, connected: true, currentProduction: 90, expectedProduction: 90, underperformanceMinutes: 0, lastUpdate: Date.now(), installDate: Date.now() - 10*24*60*60*1000 },
+  ])
+
+  // Historical Data (mock)
+  const historicalData = ref([])
+  
+  // Alerts
+  const alerts = ref([])
+
+  function generateHistoricalData() {
+    plants.value.forEach(p => {
+      // Generate some fake data up to 30 months ago
+      for(let m = 0; m < 30; m++) {
+        historicalData.value.push({
+          plantId: p.id,
+          date: new Date(Date.now() - m * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          production: Math.random() * 100,
+          efficiency: 80 + Math.random() * 20,
+          status: 'OK'
+        })
+      }
+    })
+  }
+  generateHistoricalData()
+
+  // Actions
+  function login(userId) {
+    const user = users.value.find(u => u.id === userId)
+    activeUser.value = user ? { ...user } : null
+  }
+
+  function logout() {
+    activeUser.value = null
+  }
+
+  function simulateTick() {
+    plants.value.forEach(plant => {
+      // Update timestamp
+      plant.lastUpdate = Date.now()
+      
+      // Simulate connection randomly drops
+      if (Math.random() > 0.95) plant.connected = !plant.connected
+
+      if (plant.currentProduction <= plant.expectedProduction * 0.8) {
+        plant.underperformanceMinutes += 5
+        
+        if (plant.underperformanceMinutes > 30) {
+          alerts.value.push({
+            id: Date.now() + Math.random(),
+            type: 'threshold',
+            message: `Impianto ${plant.name} sotto soglia! Produzione: ${plant.currentProduction}, Attesa: ${plant.expectedProduction}`,
+            plantId: plant.id,
+            timestamp: new Date().toISOString()
+          })
+        }
+      } else {
+        plant.underperformanceMinutes = 0
+      }
+
+      // Predictive Anomaly (US7)
+      if (Math.random() > 0.9) {
+        const isNew = (Date.now() - plant.installDate) < 30 * 24 * 60 * 60 * 1000
+        if (isNew) {
+          alerts.value.push({
+            id: Date.now() + Math.random(),
+            type: 'predictive',
+            message: `Anomalia predittiva su ${plant.name}: Dati storici insufficienti!`,
+            plantId: plant.id,
+            timestamp: new Date().toISOString()
+          })
+        } else {
+          alerts.value.push({
+            id: Date.now() + Math.random(),
+            type: 'predictive',
+            message: `Degrado progressivo rilevato su ${plant.name}`,
+            plantId: plant.id,
+            timestamp: new Date().toISOString()
+          })
+        }
+      }
+    })
+  }
+
+  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick }
+})

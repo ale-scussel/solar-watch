@@ -27,6 +27,8 @@ export const useMainStore = defineStore('main', () => {
   
   // Alerts
   const alerts = ref([])
+  // Traccia gli impianti per cui è già attivo un alert di soglia
+  const activeThresholdAlerts = new Set()
 
   function generateHistoricalData() {
     plants.value.forEach(p => {
@@ -67,8 +69,9 @@ export const useMainStore = defineStore('main', () => {
 
       if (plant.currentProduction <= plant.expectedProduction * 0.8) {
         plant.underperformanceMinutes += 5
-        
-        if (plant.underperformanceMinutes > 30) {
+
+        if (plant.underperformanceMinutes > 30 && !activeThresholdAlerts.has(plant.id)) {
+          activeThresholdAlerts.add(plant.id)
           alerts.value.push({
             id: Date.now() + Math.random(),
             type: 'threshold',
@@ -79,24 +82,23 @@ export const useMainStore = defineStore('main', () => {
         }
       } else {
         plant.underperformanceMinutes = 0
+        activeThresholdAlerts.delete(plant.id)
       }
 
       // Predictive Anomaly (US7)
       if (Math.random() > 0.9) {
         const isNew = (Date.now() - plant.installDate) < 30 * 24 * 60 * 60 * 1000
-        if (isNew) {
+        const message = isNew
+          ? `Anomalia predittiva su ${plant.name}: Dati storici insufficienti!`
+          : `Degrado progressivo rilevato su ${plant.name}`
+        const alreadyActive = alerts.value.some(
+          a => a.type === 'predictive' && a.plantId === plant.id && a.message === message
+        )
+        if (!alreadyActive) {
           alerts.value.push({
             id: Date.now() + Math.random(),
             type: 'predictive',
-            message: `Anomalia predittiva su ${plant.name}: Dati storici insufficienti!`,
-            plantId: plant.id,
-            timestamp: new Date().toISOString()
-          })
-        } else {
-          alerts.value.push({
-            id: Date.now() + Math.random(),
-            type: 'predictive',
-            message: `Degrado progressivo rilevato su ${plant.name}`,
+            message,
             plantId: plant.id,
             timestamp: new Date().toISOString()
           })

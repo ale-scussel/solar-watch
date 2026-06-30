@@ -32,12 +32,15 @@ export const useMainStore = defineStore('main', () => {
     plants.value.forEach(p => {
       // Generate some fake data up to 30 months ago
       for(let m = 0; m < 30; m++) {
+        const hasAlarm = Math.random() > 0.85
         historicalData.value.push({
           plantId: p.id,
           date: new Date(Date.now() - m * 30 * 24 * 60 * 60 * 1000).toISOString(),
           production: Math.random() * 100,
+          power: 2 + Math.random() * 8,
           efficiency: 80 + Math.random() * 20,
-          status: 'OK'
+          status: hasAlarm ? 'WARN' : 'OK',
+          alarms: hasAlarm ? 'Sottoproduzione rilevata' : ''
         })
       }
     })

@@ -36,13 +36,23 @@
         <thead class="bg-slate-50">
           <tr>
             <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Data</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Produzione</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Produzione (kWh)</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Potenza (kW)</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Stato</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Efficienza (%)</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Allarmi</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-200">
           <tr v-for="record in previewData" :key="record.date">
             <td class="px-6 py-2 whitespace-nowrap text-sm text-slate-700">{{ new Date(record.date).toLocaleDateString() }}</td>
             <td class="px-6 py-2 whitespace-nowrap text-sm text-slate-700">{{ record.production.toFixed(2) }}</td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm text-slate-700">{{ record.power.toFixed(2) }}</td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm">
+              <span :class="record.status === 'OK' ? 'text-green-600 font-medium' : 'text-amber-600 font-medium'">{{ record.status }}</span>
+            </td>
+            <td class="px-6 py-2 whitespace-nowrap text-sm text-slate-700">{{ record.efficiency.toFixed(1) }}</td>
+            <td class="px-6 py-2 text-sm text-red-600">{{ record.alarms }}</td>
           </tr>
         </tbody>
       </table>
@@ -75,9 +85,9 @@ const previewData = computed(() => {
 const exportCSV = () => {
   const dataToExport = store.historicalData.filter(d => d.plantId === selectedPlant.value)
   
-  let csvContent = "data:text/csv;charset=utf-8,Data,Produzione,Efficienza\n"
+  let csvContent = "data:text/csv;charset=utf-8,Data,Produzione (kWh),Potenza (kW),Stato,Efficienza (%),Allarmi\n"
   dataToExport.forEach(row => {
-    csvContent += `${new Date(row.date).toLocaleDateString()},${row.production.toFixed(2)},${row.efficiency.toFixed(1)}\n`
+    csvContent += `${new Date(row.date).toLocaleDateString()},${row.production.toFixed(2)},${row.power.toFixed(2)},${row.status},${row.efficiency.toFixed(1)},"${row.alarms}"\n`
   })
   
   const encodedUri = encodeURI(csvContent)
@@ -90,7 +100,113 @@ const exportCSV = () => {
 }
 
 const exportPDF = () => {
-  // Mock PDF export using browser print
-  window.print()
+  const plant = store.plants.find(p => p.id === selectedPlant.value)
+  const plantName = plant ? plant.name : selectedPlant.value
+
+  const rows = previewData.value.map(record => `
+    <tr>
+      <td>${new Date(record.date).toLocaleDateString()}</td>
+      <td>${record.production.toFixed(2)}</td>
+      <td>${record.power.toFixed(2)}</td>
+      <td class="${record.status === 'OK' ? 'ok' : 'warn'}">${record.status}</td>
+      <td>${record.efficiency.toFixed(1)}</td>
+      <td class="alarm">${record.alarms}</td>
+    </tr>`).join('')
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Report – ${plantName}</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    * { box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; font-size: 9pt; margin: 0; }
+    h2 { font-size: 13pt; margin-bottom: 8px; }
+    p.subtitle { font-size: 9pt; color: #555; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 4px 7px; text-align: left; word-break: break-word; }
+    th { background: #f1f5f9; font-size: 8pt; text-transform: uppercase; letter-spacing: .05em; }
+    tr:nth-child(even) { background: #f9fafb; }
+    .ok   { color: #16a34a; font-weight: 600; }
+    .warn { color: #d97706; font-weight: 600; }
+    .alarm { color: #dc2626; }
+  </style>
+</head>
+<body>
+  <h2>Report Impianto: ${plantName}</h2>
+  <p class="subtitle">Generato il ${new Date().toLocaleDateString()}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Produzione (kWh)</th>
+        <th>Potenza (kW)</th>
+        <th>Stato</th>
+        <th>Efficienza (%)</th>
+        <th>Allarmi</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }<\/script>
+</body>
+</html>`
+
+  const win = window.open('', '_blank', 'width=900,height=600')
+  win.document.write(html)
+  win.document.close()
 }
 </script>
+
+<style>
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  /* Nascondi tutto tranne il report */
+  body > * {
+    display: none !important;
+  }
+
+  /* Mostra solo il contenuto dell'app */
+  #app {
+    display: block !important;
+  }
+
+  /* Nascondi navbar, bottoni e controlli di filtro */
+  nav,
+  header,
+  .flex.gap-4,
+  .grid.grid-cols-1 {
+    display: none !important;
+  }
+
+  /* Forza la tabella a occupare tutta la larghezza */
+  table {
+    width: 100% !important;
+    font-size: 9pt !important;
+    border-collapse: collapse !important;
+  }
+
+  th, td {
+    padding: 4px 6px !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    border: 1px solid #ccc !important;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Evita interruzioni di pagina nel mezzo di una riga */
+  tr {
+    page-break-inside: avoid;
+  }
+}
+</style>

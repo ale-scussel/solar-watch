@@ -21,10 +21,10 @@
     </div>
 
     <div v-if="selectedPlant" class="flex gap-4">
-      <button @click="exportCSV" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition" data-cy="export-csv-btn">
+      <button @click="exportCSV" class="text-white px-6 py-2 rounded-lg font-medium shadow-sm transition" style="background-color:#0ea5e9" onmouseover="this.style.backgroundColor='#0284c7'" onmouseout="this.style.backgroundColor='#0ea5e9'" data-cy="export-csv-btn">
         Esporta CSV
       </button>
-      <button @click="exportPDF" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition" data-cy="export-pdf-btn">
+      <button @click="exportPDF" class="text-white px-6 py-2 rounded-lg font-medium shadow-sm transition" style="background-color:#0ea5e9" onmouseover="this.style.backgroundColor='#0284c7'" onmouseout="this.style.backgroundColor='#0ea5e9'" data-cy="export-pdf-btn">
         Esporta PDF (Stampa)
       </button>
     </div>

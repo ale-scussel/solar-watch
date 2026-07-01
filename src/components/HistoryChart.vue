@@ -1,5 +1,5 @@
 <template>
-  <component :is="chartComponent" :data="chartData" :options="chartOptions" />
+  <component :is="chartComponent" :key="props.type" :data="chartData" :options="chartOptions" />
 </template>
 
 <script setup>

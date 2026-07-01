@@ -50,7 +50,9 @@
         </div>
       </div>
       <div class="p-4" style="height:300px;">
-        <HistoryChart :records="chartHistory" :type="chartType" data-cy="history-chart" />
+        <div data-cy="history-chart" style="position:relative;height:100%;width:100%;">
+          <HistoryChart :records="chartHistory" :type="chartType" />
+        </div>
       </div>
     </div>
 

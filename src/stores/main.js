@@ -10,7 +10,7 @@ export const useMainStore = defineStore('main', () => {
     { id: 4, name: 'Cliente B', role: 'cliente' },
     { id: 5, name: 'Sconosciuto', role: '' }
   ])
-  
+
   const activeUser = ref(null)
 
   // Plants
@@ -24,7 +24,7 @@ export const useMainStore = defineStore('main', () => {
 
   // Historical Data (mock)
   const historicalData = ref([])
-  
+
   // Alerts
   const alerts = ref([])
   // Traccia gli impianti per cui è già attivo un alert di soglia
@@ -65,8 +65,8 @@ export const useMainStore = defineStore('main', () => {
   function simulateTick() {
     plants.value.forEach(plant => {
       // Update timestamp
-      plant.lastUpdate = Date.now()
-      
+      plant.lastUpdate = plant.lastUpdate += 5 * 60 * 1000;
+
       // Simulate connection randomly drops
       if (Math.random() > 0.95) plant.connected = !plant.connected
 

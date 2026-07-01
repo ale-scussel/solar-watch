@@ -12,7 +12,7 @@
           <router-link to="/dashboard" class="hover:text-primary transition py-1" active-class="text-primary border-b-2 border-primary">Dashboard</router-link>
           <router-link v-if="store.activeUser.role === 'responsabile'" to="/history" class="hover:text-primary transition py-1" active-class="text-primary border-b-2 border-primary">Storico</router-link>
           <router-link v-if="store.activeUser.role === 'responsabile'" to="/reports" class="hover:text-primary transition py-1" active-class="text-primary border-b-2 border-primary">Report</router-link>
-          <router-link v-if="store.activeUser.role === 'responsabile'" to="/admin" class="hover:text-primary transition py-1" active-class="text-primary border-b-2 border-primary">Admin</router-link>
+          <router-link v-if="store.activeUser.role === 'responsabile' || store.activeUser.role === 'tecnico'" to="/admin" class="hover:text-primary transition py-1" active-class="text-primary border-b-2 border-primary">Admin</router-link>
         </nav>
         <div v-if="store.activeUser" class="flex items-center gap-4">
           <span class="font-medium bg-slate-100 text-slate-600 border border-slate-200 px-3 py-1 rounded-full text-sm">

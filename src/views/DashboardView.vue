@@ -67,16 +67,27 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useMainStore } from '../stores/main'
 
 const store = useMainStore()
 
+// Snapshot degli ID impianti visibili al cliente al momento del mount.
+// Garantisce che una rimozione effettuata mentre il cliente è sulla pagina
+// non aggiorni la vista in tempo reale: il cliente vede la scomparsa
+// solo al prossimo accesso alla dashboard (lazy removal).
+const clientPlantIdsSnapshot = ref(null)
+
 const visiblePlants = computed(() => {
   if (store.activeUser?.role === 'cliente') {
-    return store.plants.filter(p => p.clientId === store.activeUser.id)
+    const snapshot = clientPlantIdsSnapshot.value
+    if (!snapshot) {
+      // Pre-mount fallback: mostra impianti non in rimozione
+      return store.plants.filter(p => p.clientId === store.activeUser.id && !p.pendingDeletion)
+    }
+    return store.plants.filter(p => snapshot.has(p.id))
   }
-  return store.plants
+  return store.plants.filter(p => !p.pendingDeletion)
 })
 
 // Last update timestamp per plant
@@ -88,6 +99,13 @@ const formatLastUpdate = (ts) => {
 let autoRefreshInterval = null
 
 onMounted(() => {
+  if (store.activeUser?.role === 'cliente') {
+    clientPlantIdsSnapshot.value = new Set(
+      store.plants
+        .filter(p => p.clientId === store.activeUser.id && !p.pendingDeletion)
+        .map(p => p.id)
+    )
+  }
   autoRefreshInterval = setInterval(() => {
     store.simulateTick()
   }, 5 * 60 * 1000)

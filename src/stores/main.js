@@ -63,7 +63,7 @@ export const useMainStore = defineStore('main', () => {
   }
 
   function simulateTick() {
-    plants.value.forEach(plant => {
+    plants.value.filter(p => !p.pendingDeletion).forEach(plant => {
       // Update timestamp
       plant.lastUpdate = plant.lastUpdate += 5 * 60 * 1000;
 
@@ -110,6 +110,27 @@ export const useMainStore = defineStore('main', () => {
     })
   }
 
+  function addPlant({ name, clientId, expectedProduction }) {
+    const newId = Math.max(...plants.value.map(p => p.id)) + 1
+    plants.value.push({
+      id: newId,
+      name,
+      clientId: Number(clientId),
+      connected: true,
+      currentProduction: 0,
+      expectedProduction: Number(expectedProduction),
+      underperformanceMinutes: 0,
+      lastUpdate: Date.now(),
+      installDate: Date.now(),
+      pendingDeletion: false
+    })
+  }
+
+  function removePlant(plantId) {
+    const plant = plants.value.find(p => p.id === plantId)
+    if (plant) plant.pendingDeletion = true
+  }
+
   // QA-only: inietta un alert threshold deterministico sul primo impianto visibile,
   // senza dipendere da valori casuali. Usato esclusivamente dai test Cypress.
   function forceAlert() {
@@ -127,5 +148,5 @@ export const useMainStore = defineStore('main', () => {
     activeThresholdAlerts.add(plant.id)
   }
 
-  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick, forceAlert }
+  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick, forceAlert, addPlant, removePlant }
 })

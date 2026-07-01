@@ -37,10 +37,10 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: AdminView,
-      meta: { requiresAuth: true, roles: ['responsabile'] }
+      meta: { requiresAuth: true, roles: ['responsabile', 'tecnico'] }
     }
   ]
-})
+});
 
 router.beforeEach((to, from, next) => {
   const store = useMainStore()

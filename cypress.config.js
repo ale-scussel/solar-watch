@@ -7,5 +7,13 @@ export default defineConfig({
     },
     supportFile: false
   },
+  component: {
+    devServer: {
+      framework: 'vue',
+      bundler: 'vite'
+    },
+    specPattern: 'cypress/component/**/*.cy.{js,ts}',
+    supportFile: 'cypress/support/component.js'
+  }
   // video: true
 });

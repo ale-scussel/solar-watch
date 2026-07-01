@@ -128,8 +128,21 @@ export const useMainStore = defineStore('main', () => {
 
   function removePlant(plantId) {
     const plant = plants.value.find(p => p.id === plantId)
-    if (plant) plant.pendingDeletion = true
+    if (plant) {
+      plant.pendingDeletion = true
+      plant.deletedAt = new Date().toISOString()
+    }
   }
+
+  function restorePlant(plantId) {
+    const plant = plants.value.find(p => p.id === plantId)
+    if (plant) {
+      plant.pendingDeletion = false
+      plant.deletedAt = null
+    }
+  }
+
+  const deletedPlants = computed(() => plants.value.filter(p => p.pendingDeletion))
 
   // QA-only: inietta un alert threshold deterministico sul primo impianto visibile,
   // senza dipendere da valori casuali. Usato esclusivamente dai test Cypress.
@@ -148,5 +161,5 @@ export const useMainStore = defineStore('main', () => {
     activeThresholdAlerts.add(plant.id)
   }
 
-  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick, forceAlert, addPlant, removePlant }
+  return { users, activeUser, plants, deletedPlants, historicalData, alerts, login, logout, simulateTick, forceAlert, addPlant, removePlant, restorePlant }
 })

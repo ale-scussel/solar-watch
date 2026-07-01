@@ -53,22 +53,66 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-slate-100">
-          <tr v-for="plant in store.plants" :key="plant.id"
-            :class="plant.pendingDeletion ? 'opacity-50 bg-red-50' : ''"
+          <tr v-for="plant in store.plants.filter(p => !p.pendingDeletion)" :key="plant.id"
             :data-cy="`admin-plant-row-${plant.id}`">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ plant.id }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800">{{ plant.name }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ clientName(plant.clientId) }}</td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <span v-if="plant.pendingDeletion"
-                class="px-2 py-0.5 rounded bg-red-100 text-red-700 text-xs font-medium">In rimozione</span>
-              <span v-else
-                class="px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Attivo</span>
+              <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-medium">Attivo</span>
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm">
-              <button v-if="!plant.pendingDeletion" @click="confirmRemove(plant)"
+              <button @click="confirmRemove(plant)"
                 class="text-red-600 hover:text-red-800 text-xs font-medium"
                 :data-cy="`admin-remove-plant-${plant.id}`">Rimuovi</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Storico Impianti Eliminati — solo responsabile -->
+    <div v-if="store.activeUser?.role === 'responsabile'" class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="p-6 border-b border-slate-50 bg-slate-50 flex items-center justify-between">
+        <h3 class="font-bold text-lg text-slate-800">Storico Impianti Eliminati</h3>
+        <button
+          v-if="selectedDeletedPlants.length > 0"
+          @click="restoreSelected"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition"
+          data-cy="restore-selected-btn"
+        >Ripristina selezionati ({{ selectedDeletedPlants.length }})</button>
+      </div>
+
+      <div v-if="store.deletedPlants.length === 0" class="p-6 text-slate-500 text-sm" data-cy="no-deleted-plants">
+        Nessun impianto eliminato.
+      </div>
+
+      <table v-else class="min-w-full divide-y divide-slate-200">
+        <thead class="bg-white">
+          <tr>
+            <th class="px-6 py-3">
+              <input type="checkbox" @change="toggleSelectAll" :checked="allDeletedSelected" data-cy="select-all-deleted" />
+            </th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">ID</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nome</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Cliente</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Eliminato il</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Azione</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-slate-100">
+          <tr v-for="plant in store.deletedPlants" :key="plant.id" :data-cy="`deleted-plant-row-${plant.id}`">
+            <td class="px-6 py-4">
+              <input type="checkbox" :value="plant.id" v-model="selectedDeletedPlants" :data-cy="`select-deleted-${plant.id}`" />
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{{ plant.id }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-800">{{ plant.name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{{ clientName(plant.clientId) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+              {{ plant.deletedAt ? new Date(plant.deletedAt).toLocaleString('it-IT') : '—' }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <button @click="store.restorePlant(plant.id)" class="text-green-600 hover:text-green-800 text-xs font-medium" :data-cy="`restore-plant-${plant.id}`">Ripristina</button>
             </td>
           </tr>
         </tbody>
@@ -140,5 +184,18 @@ const submitAddPlant = () => {
 
 const confirmRemove = (plant) => {
   store.removePlant(plant.id)
+}
+
+// Storico impianti eliminati
+const selectedDeletedPlants = ref([])
+const allDeletedSelected = computed(
+  () => store.deletedPlants.length > 0 && selectedDeletedPlants.value.length === store.deletedPlants.length
+)
+const toggleSelectAll = (e) => {
+  selectedDeletedPlants.value = e.target.checked ? store.deletedPlants.map(p => p.id) : []
+}
+const restoreSelected = () => {
+  selectedDeletedPlants.value.forEach(id => store.restorePlant(id))
+  selectedDeletedPlants.value = []
 }
 </script>

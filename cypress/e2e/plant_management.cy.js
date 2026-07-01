@@ -98,8 +98,11 @@ describe('Gestione Impianti', () => {
     // Rimuovi Impianto Roma (id=101, appartiene a Cliente A)
     cy.get('[data-cy="admin-remove-plant-101"]').click()
 
-    // Il badge "In rimozione" deve comparire nella tabella
-    cy.get('[data-cy="admin-plant-row-101"]').should('contain', 'In rimozione')
+    // La riga non deve più comparire nella tabella principale
+    cy.get('[data-cy="admin-plant-row-101"]').should('not.exist')
+
+    // L'impianto deve comparire nella sezione Storico Eliminati
+    cy.get('[data-cy="deleted-plant-row-101"]').should('be.visible')
 
     // Nella dashboard il responsabile non deve più vedere l'impianto 101
     cy.contains('Dashboard').click()
@@ -128,7 +131,7 @@ describe('Gestione Impianti', () => {
     loginAs(1)
     cy.contains('Admin').click()
     cy.get('[data-cy="admin-remove-plant-101"]').click()
-    cy.get('[data-cy="admin-plant-row-101"]').should('contain', 'In rimozione')
+    cy.get('[data-cy="deleted-plant-row-101"]').should('be.visible')
 
     // Cliente A si ri-autentica (simula "refresh")
     cy.get('[data-cy="logout-btn"]').click()

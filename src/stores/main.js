@@ -15,11 +15,11 @@ export const useMainStore = defineStore('main', () => {
 
   // Plants
   const plants = ref([
-    { id: 101, name: 'Impianto Roma', clientId: 3, connected: true, currentProduction: 100, expectedProduction: 100, underperformanceMinutes: 0, lastUpdate: Date.now(), installDate: Date.now() - 365*24*60*60*1000 },
-    { id: 102, name: 'Impianto Milano', clientId: 4, connected: true, currentProduction: 50, expectedProduction: 100, underperformanceMinutes: 20, lastUpdate: Date.now(), installDate: Date.now() - 100*24*60*60*1000 },
-    { id: 103, name: 'Impianto Napoli', clientId: 3, connected: true, currentProduction: 70, expectedProduction: 100, underperformanceMinutes: 35, lastUpdate: Date.now(), installDate: Date.now() - 5*24*60*60*1000 }, // New plant
-    { id: 104, name: 'Impianto Torino', clientId: 4, connected: false, currentProduction: 0, expectedProduction: 50, underperformanceMinutes: 50, lastUpdate: Date.now(), installDate: Date.now() - 500*24*60*60*1000 },
-    { id: 105, name: 'Serra Firenze', clientId: 3, connected: true, currentProduction: 90, expectedProduction: 90, underperformanceMinutes: 0, lastUpdate: Date.now(), installDate: Date.now() - 10*24*60*60*1000 },
+    { id: 101, name: 'Impianto Roma', clientId: 3, connected: true, currentProduction: 100, expectedProduction: 100, underperformanceMinutes: 0, lastUpdate: Date.now() - Math.floor(Math.random() * 60 * 1000), installDate: Date.now() - 365*24*60*60*1000 },
+    { id: 102, name: 'Impianto Milano', clientId: 4, connected: true, currentProduction: 50, expectedProduction: 100, underperformanceMinutes: 20, lastUpdate: Date.now() - Math.floor(Math.random() * 60 * 1000), installDate: Date.now() - 100*24*60*60*1000 },
+    { id: 103, name: 'Impianto Napoli', clientId: 3, connected: true, currentProduction: 70, expectedProduction: 100, underperformanceMinutes: 35, lastUpdate: Date.now() - Math.floor(Math.random() * 60 * 1000), installDate: Date.now() - 5*24*60*60*1000 }, // New plant
+    { id: 104, name: 'Impianto Torino', clientId: 4, connected: false, currentProduction: 0, expectedProduction: 50, underperformanceMinutes: 50, lastUpdate: Date.now() - Math.floor(Math.random() * 60 * 1000), installDate: Date.now() - 500*24*60*60*1000 },
+    { id: 105, name: 'Serra Firenze', clientId: 3, connected: true, currentProduction: 90, expectedProduction: 90, underperformanceMinutes: 0, lastUpdate: Date.now() - Math.floor(Math.random() * 60 * 1000), installDate: Date.now() - 10*24*60*60*1000 },
   ])
 
   // Historical Data (mock)

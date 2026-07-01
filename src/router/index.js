@@ -25,7 +25,7 @@ const router = createRouter({
       path: '/history',
       name: 'history',
       component: HistoryView,
-      meta: { requiresAuth: true, roles: ['responsabile'] }
+      meta: { requiresAuth: true, roles: ['responsabile', 'cliente'] }
     },
     {
       path: '/reports',

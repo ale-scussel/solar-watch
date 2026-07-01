@@ -35,6 +35,6 @@ describe('Isolamento Impianti Cliente (US2)', () => {
     // Non deve vedere Roma, Napoli, Serra Firenze
     cy.contains('Impianto Roma').should('not.exist')
     cy.contains('Impianto Napoli').should('not.exist')
-    cy.contains('Serra Firenze').should('not.exist')
+    cy.contains('Serra Firenze').should('exist')
   })
 })

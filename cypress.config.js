@@ -7,5 +7,5 @@ export default defineConfig({
     },
     supportFile: false
   },
-  video: true
+  // video: true
 });

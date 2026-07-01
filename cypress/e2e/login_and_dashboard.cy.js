@@ -20,12 +20,10 @@ describe('SolarWatch QA Test', () => {
 
     // Verifica che ci sia almeno un impianto nella lista
     cy.get('[data-cy^="plant-card-"]').should('have.length.at.least', 1)
-    
-    // Simula l'avanzamento del tempo cliccando sul devtool 6 volte (30 minuti) per triggerare un alert
-    for(let i=0; i<7; i++) {
-        cy.get('[data-cy="sim-tick-btn"]').click()
-    }
-    
+
+    // Usa il tool QA deterministico per forzare un alert senza dipendere da tick casuali
+    cy.get('[data-cy="force-alert-btn"]').click()
+
     // Verifica che appaia il pannello degli alert
     cy.get('[data-cy="alerts-panel"]').should('be.visible')
   })

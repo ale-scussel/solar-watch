@@ -12,7 +12,7 @@
       </div>
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1">Mesi indietro</label>
-        <input type="number" v-model="monthsBack" class="w-32 border-slate-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 p-2 border" min="1" max="36" data-cy="history-months-input" />
+        <input type="number" v-model="monthsBack" class="w-32 border-slate-300 rounded-md shadow-sm focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 p-2 border" min="1" max="24" data-cy="history-months-input" />
       </div>
     </div>
 
@@ -50,15 +50,23 @@ const store = useMainStore()
 const selectedPlant = ref('')
 const monthsBack = ref(6)
 
+const MAX_MONTHS = 24
+
 const filteredHistory = computed(() => {
   if (!selectedPlant.value) return []
-  
-  const cutoffDate = new Date()
-  cutoffDate.setMonth(cutoffDate.getMonth() - monthsBack.value)
 
-  // Filter history
+  const clampedMonths = Math.min(Number(monthsBack.value), MAX_MONTHS)
+  const cutoffDate = new Date()
+  cutoffDate.setMonth(cutoffDate.getMonth() - clampedMonths)
+
+  const maxCutoffDate = new Date()
+  maxCutoffDate.setMonth(maxCutoffDate.getMonth() - MAX_MONTHS)
+
+  const effectiveCutoff = cutoffDate > maxCutoffDate ? cutoffDate : maxCutoffDate
+
+  // Filter history — never show data older than 24 months
   return store.historicalData.filter(d => {
-    return d.plantId === selectedPlant.value && new Date(d.date) >= cutoffDate
+    return d.plantId === selectedPlant.value && new Date(d.date) >= effectiveCutoff
   }).sort((a, b) => new Date(b.date) - new Date(a.date))
 })
 </script>

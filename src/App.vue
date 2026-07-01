@@ -30,7 +30,10 @@
     <!-- Dev Tools for QA testing -->
     <div v-if="store.activeUser" class="fixed bottom-4 right-4 bg-white shadow-xl rounded-xl border p-4 z-50 text-xs">
       <h3 class="font-bold mb-2">QA Simulation Tools</h3>
-      <button @click="store.simulateTick()" class="bg-slate-800 text-white px-3 py-1 rounded hover:bg-slate-700" data-cy="sim-tick-btn">+5 Minuti (Tick)</button>
+      <div class="flex flex-col gap-2">
+        <button @click="store.simulateTick()" class="bg-slate-800 text-white px-3 py-1 rounded hover:bg-slate-700" data-cy="sim-tick-btn">+5 Minuti (Tick)</button>
+        <button @click="store.forceAlert()" class="bg-red-700 text-white px-3 py-1 rounded hover:bg-red-800" data-cy="force-alert-btn">Forza Alert (QA)</button>
+      </div>
     </div>
   </div>
 </template>

@@ -32,12 +32,15 @@ export const useMainStore = defineStore('main', () => {
 
   function generateHistoricalData() {
     plants.value.forEach(p => {
-      // Generate some fake data up to 30 months ago
-      for(let m = 0; m < 30; m++) {
+      // Generate some fake data up to 24 months ago
+      for(let m = 0; m < 24; m++) {
         const hasAlarm = Math.random() > 0.85
+        const d = new Date()
+        d.setMonth(d.getMonth() - m)
+        d.setDate(1)
         historicalData.value.push({
           plantId: p.id,
-          date: new Date(Date.now() - m * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          date: d.toISOString(),
           production: Math.random() * 100,
           power: 2 + Math.random() * 8,
           efficiency: 80 + Math.random() * 20,
@@ -107,5 +110,22 @@ export const useMainStore = defineStore('main', () => {
     })
   }
 
-  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick }
+  // QA-only: inietta un alert threshold deterministico sul primo impianto visibile,
+  // senza dipendere da valori casuali. Usato esclusivamente dai test Cypress.
+  function forceAlert() {
+    const plant = plants.value[0]
+    if (!plant) return
+    plant.underperformanceMinutes = 35
+    activeThresholdAlerts.delete(plant.id)
+    alerts.value.push({
+      id: Date.now() + Math.random(),
+      type: 'threshold',
+      message: `[QA] Impianto ${plant.name} sotto soglia! Produzione: ${plant.currentProduction}, Attesa: ${plant.expectedProduction}`,
+      plantId: plant.id,
+      timestamp: new Date().toISOString()
+    })
+    activeThresholdAlerts.add(plant.id)
+  }
+
+  return { users, activeUser, plants, historicalData, alerts, login, logout, simulateTick, forceAlert }
 })

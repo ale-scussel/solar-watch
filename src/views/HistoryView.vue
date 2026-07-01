@@ -33,6 +33,27 @@
       </div>
     </div>
 
+    <!-- Chart panel -->
+    <div v-if="selectedPlant && filteredHistory.length > 0" class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+      <div class="flex justify-between items-center px-6 py-3 border-b border-slate-100">
+        <span class="text-sm font-semibold text-slate-700">Grafico Produzione</span>
+        <div class="flex gap-1" data-cy="chart-type-selector">
+          <button v-for="opt in chartTypes" :key="opt.value"
+            @click="chartType = opt.value"
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border transition"
+            :class="chartType === opt.value
+              ? 'bg-primary text-white border-primary'
+              : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'"
+            :data-cy="`chart-type-${opt.value}`">
+            <span>{{ opt.icon }}</span> {{ opt.label }}
+          </button>
+        </div>
+      </div>
+      <div class="p-4" style="height:300px;">
+        <HistoryChart :records="chartHistory" :type="chartType" data-cy="history-chart" />
+      </div>
+    </div>
+
     <!-- Results summary + table -->
     <div v-if="selectedPlant">
       <div class="flex justify-between items-center mb-2 text-sm text-slate-500">
@@ -96,6 +117,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useMainStore } from '../stores/main'
+import HistoryChart from '../components/HistoryChart.vue'
 
 const store = useMainStore()
 
@@ -128,6 +150,13 @@ const dateFrom = ref(defaultFrom())
 const dateTo = ref(today)
 const currentPage = ref(1)
 const activePreset = ref(6)
+const chartType = ref('line')
+
+const chartTypes = [
+  { value: 'line', label: 'Linea',  icon: '📈' },
+  { value: 'bar',  label: 'Barre',  icon: '📊' },
+  { value: 'pie',  label: 'Torta',  icon: '🥧' }
+]
 
 // ── Plants available to the current user ──────────────────────────────────────
 const availablePlants = computed(() => {
@@ -168,6 +197,9 @@ const paginatedHistory = computed(() => {
 
 // Reset page when filters change
 watch([selectedPlant, dateFrom, dateTo], () => { currentPage.value = 1 })
+
+// ── Chart data (chronological order for X axis) ─────────────────────────────
+const chartHistory = computed(() => [...filteredHistory.value].reverse())
 
 // ── Quick presets ─────────────────────────────────────────────────────────────
 function setPreset(months) {
